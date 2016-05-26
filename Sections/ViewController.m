@@ -7,6 +7,7 @@
 //
 
 #import "ViewController.h"
+#import "SearchResultsController.h"
 
 static NSString *SectionsTableIdentifier = @"SectionsTableIdentifier";
 
@@ -14,6 +15,7 @@ static NSString *SectionsTableIdentifier = @"SectionsTableIdentifier";
 @property (copy, nonatomic) NSDictionary *names;
 @property (copy, nonatomic) NSArray *keys;
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
+@property (strong, nonatomic) UISearchController *searchController;
 @end
 
 @implementation ViewController
@@ -25,6 +27,21 @@ static NSString *SectionsTableIdentifier = @"SectionsTableIdentifier";
     NSString *path = [[NSBundle mainBundle] pathForResource:@"sortednames" ofType:@"plist"];
     self.names = [NSDictionary dictionaryWithContentsOfFile:path];
     self.keys = [[self.names allKeys] sortedArrayUsingSelector:@selector(compare:)];
+    
+    SearchResultsController *resultController = [[SearchResultsController alloc]initWithNames:self.names keys:self.keys];
+    self.searchController = [[UISearchController alloc]initWithSearchResultsController:resultController];
+    
+    UISearchBar *searchBar = self.searchController.searchBar;
+    searchBar.scopeButtonTitles = @[@"All", @"Short", @"Long"];
+    searchBar.placeholder = @"Enter a search term";
+    [searchBar sizeToFit];
+    self.tableView.tableHeaderView = searchBar;
+    self.searchController.searchResultsUpdater = resultController;
+    
+    
+    self.tableView.sectionIndexBackgroundColor = [UIColor blackColor];
+    self.tableView.sectionIndexTrackingBackgroundColor = [UIColor darkGrayColor];
+    self.tableView.sectionIndexColor = [UIColor whiteColor];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -57,6 +74,10 @@ static NSString *SectionsTableIdentifier = @"SectionsTableIdentifier";
     
     cell.textLabel.text = nameSection[indexPath.row];
     return cell;
+}
+
+- (NSArray<NSString *> *)sectionIndexTitlesForTableView:(UITableView *)tableView {
+    return self.keys;
 }
 
 @end
